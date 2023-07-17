@@ -41,6 +41,7 @@ class FormView extends Component {
         answer: this.state.answer,
         difficulty: this.state.difficulty,
         category: this.state.category,
+        rating: this.state.rating
       }),
       xhrFields: {
         withCredentials: true,
@@ -93,11 +94,21 @@ class FormView extends Component {
             <select name='category' onChange={this.handleChange}>
               {Object.keys(this.state.categories).map((id) => {
                 return (
-                  <option key={id} value={id}>
-                    {this.state.categories[id]}
+                  <option key={this.state.categories[id].id} value={this.state.categories[id].id}>
+                    {this.state.categories[id].id}
                   </option>
                 );
               })}
+            </select>
+          </label>
+          <label>
+            Rating
+            <select name='rating' onChange={this.handleChange}>
+              <option value='1'>1</option>
+              <option value='2'>2</option>
+              <option value='3'>3</option>
+              <option value='4'>4</option>
+              <option value='5'>5</option>
             </select>
           </label>
           <input type='submit' className='button' value='Submit' />
