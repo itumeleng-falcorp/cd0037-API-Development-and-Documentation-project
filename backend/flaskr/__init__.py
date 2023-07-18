@@ -197,9 +197,9 @@ def create_app(test_config=None):
                 Question.category == category, ~Question.id.in_(questions)
             )
             current_questions = paginate(request, selection)
-            selected_question = random.choice(current_questions)
             if len(current_questions) == 0:
                 abort(404)
+            selected_question = random.choice(current_questions)
             return jsonify(
                 {
                     "success": True,
@@ -207,7 +207,7 @@ def create_app(test_config=None):
                 }
             )
         except:
-            abort(422)
+            abort(404)
 
     @app.errorhandler(404)
     def not_found(error):

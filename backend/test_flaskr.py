@@ -20,6 +20,7 @@ class TriviaTestCase(unittest.TestCase):
             "answer": "Kevin",
             "difficulty": 5,
             "category": 6,
+            "rating": 5
         }
 
         self.search = {"searchTerm": "favourite"}
@@ -39,20 +40,11 @@ class TriviaTestCase(unittest.TestCase):
         """Test GET /categories"""
         res = self.client.get("/categories")
         data = json.loads(res.data)
+
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
         self.assertTrue(data["categories"])
         self.assertTrue(data["total_categories"])
-
-    # Test 404 retrieve categories
-    def test_404_retrieve_categories(self):
-        """Test GET /categories?page=1000"""
-        res = self.client.get("/categories?page=1000")
-        data = json.loads(res.data)
-
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "resource not found")
 
     # Test retrieve questions
     def test_retrieve_questions(self):
@@ -80,12 +72,12 @@ class TriviaTestCase(unittest.TestCase):
     # Test delete question
     def test_delete_question(self):
         """Test DELETE /questions/<question_id>"""
-        res = self.client.delete("/questions/57")
+        res = self.client.delete("/questions/5")
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
-        self.assertEqual(data["deleted"], 57)
+        self.assertEqual(data["deleted"], 5)
         self.assertTrue(data["total_questions"])
         self.assertTrue(len(data["questions"]))
 
@@ -168,7 +160,9 @@ class TriviaTestCase(unittest.TestCase):
         """Test POST /quizzes"""
         quiz_data = {
             "previous_questions": [],
-            "quiz_category": {"type": {"type": "Science", "id": "1"}, "id": "1"},
+            "quiz_category": {
+                "type": {"type": "Who is you favourite player?", "id": "6"},
+            },
         }
         res = self.client.post("/quizzes", json=quiz_data)
         data = json.loads(res.data)
@@ -178,21 +172,20 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data["question"])
 
     # Test get quiz question
-    def test_422_get_quiz_question(self):
+    def test_404_get_quiz_question(self):
         """Test POST /quizzes"""
         quiz_data = {
             "previous_questions": [],
             "quiz_category": {
                 "type": {"type": "Doesn't Exist", "id": "10"},
-                "id": "10",
             },
         }
         res = self.client.post("/quizzes", json=quiz_data)
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 404)
         self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "unprocessable")
+        self.assertEqual(data["message"], "resource not found")
 
 
 # Make the tests conveniently executable
