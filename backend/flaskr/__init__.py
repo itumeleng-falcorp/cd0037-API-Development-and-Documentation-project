@@ -53,40 +53,47 @@ def create_app(test_config=None):
                     "total_categories": len(Category.query.all()),
                 }
             )
-        except:
+        except Exception as e:
             abort(422)
 
     @app.route("/categories")
     def retrieve_categories():
-        selection = Category.query.order_by(Category.id).all()
-        categories = [category.format() for category in selection]
-        if len(categories) == 0:
+        try:
+            selection = Category.query.order_by(Category.id).all()
+            categories = [category.format() for category in selection]
+            if len(categories) == 0:
+                abort(404)
+            return jsonify(
+                {
+                    "success": True,
+                    "categories": categories,
+                    "total_categories": len(Category.query.all()),
+                }
+            )
+        except Exception as e:
             abort(404)
-        return jsonify(
-            {
-                "success": True,
-                "categories": categories,
-                "total_categories": len(Category.query.all()),
-            }
-        )
 
     @app.route("/questions")
     def retrieve_questions():
-        selection = Question.query.order_by(Question.id).all()
-        current_questions = paginate(request, selection)
-        categories = Category.query.order_by(Category.id).all()
-        current_categories = [category.format() for category in categories]
-        if len(current_questions) == 0:
+        try:
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate(request, selection)
+            print("selection", current_questions)
+            categories = Category.query.order_by(Category.id).all()
+            current_categories = [category.format() for category in categories]
+            if len(current_questions) == 0:
+                abort(404)
+            return jsonify(
+                {
+                    "success": True,
+                    "questions": current_questions,
+                    "total_questions": len(Question.query.all()),
+                    "categories": current_categories,
+                    "current_category": current_categories[0],
+                }
+            )
+        except Exception as e:
             abort(404)
-        return jsonify(
-            {
-                "success": True,
-                "questions": current_questions,
-                "total_questions": len(Question.query.all()),
-                "categories": current_categories,
-                "current_category": current_categories[0],
-            }
-        )
 
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_question(question_id):
@@ -105,12 +112,21 @@ def create_app(test_config=None):
                     "total_questions": len(Question.query.all()),
                 }
             )
-        except:
+        except Exception as e:
             abort(422)
 
     @app.route("/questions", methods=["POST"])
     def create_question():
         body = request.get_json()
+
+        if not (
+            "question" in body
+            and "answer" in body
+            and "difficulty" in body
+            and "category" in body
+            and "rating" in body
+        ):
+            abort(422)
 
         new_question = body.get("question", None)
         new_answer = body.get("answer", None)
@@ -124,7 +140,7 @@ def create_app(test_config=None):
                 answer=new_answer,
                 difficulty=new_difficulty,
                 category=new_category,
-                rating=new_rating
+                rating=new_rating,
             )
             question.insert()
 
@@ -140,7 +156,7 @@ def create_app(test_config=None):
                 }
             )
 
-        except:
+        except Exception as e:
             abort(405)
 
     @app.route("/questions/search", methods=["POST"])
@@ -165,7 +181,7 @@ def create_app(test_config=None):
                     "current_category": current_categories[0],
                 }
             )
-        except:
+        except Exception as e:
             abort(422)
 
     @app.route("/categories/<int:category_id>/questions")
@@ -184,7 +200,7 @@ def create_app(test_config=None):
                     "total_questions": len(selection.all()),
                 }
             )
-        except:
+        except Exception as e:
             abort(422)
 
     @app.route("/quizzes", methods=["POST"])
@@ -192,9 +208,12 @@ def create_app(test_config=None):
         body = request.get_json()
         questions = body.get("previous_questions", None)
         category = body.get("quiz_category", None).get("type", None).get("id", None)
+        print("category", category)
         try:
-            selection = Question.query.order_by(Question.id).filter(
-                Question.category == category, ~Question.id.in_(questions)
+            selection = (
+                Question.query.order_by(Question.id)
+                .filter(Question.category == category, Question.id.notin_(questions))
+                .all()
             )
             current_questions = paginate(request, selection)
             if len(current_questions) == 0:
@@ -206,7 +225,7 @@ def create_app(test_config=None):
                     "question": selected_question,
                 }
             )
-        except:
+        except Exception as e:
             abort(404)
 
     @app.errorhandler(404)

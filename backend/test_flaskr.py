@@ -72,12 +72,12 @@ class TriviaTestCase(unittest.TestCase):
     # Test delete question
     def test_delete_question(self):
         """Test DELETE /questions/<question_id>"""
-        res = self.client.delete("/questions/5")
+        res = self.client.delete("/questions/91")
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
-        self.assertEqual(data["deleted"], 5)
+        self.assertEqual(data["deleted"], 91)
         self.assertTrue(data["total_questions"])
         self.assertTrue(len(data["questions"]))
 
@@ -160,9 +160,7 @@ class TriviaTestCase(unittest.TestCase):
         """Test POST /quizzes"""
         quiz_data = {
             "previous_questions": [],
-            "quiz_category": {
-                "type": {"type": "Who is you favourite player?", "id": "6"},
-            },
+            "quiz_category": {"type": {"type": "Sports", "id": "6"}},
         }
         res = self.client.post("/quizzes", json=quiz_data)
         data = json.loads(res.data)
@@ -178,6 +176,7 @@ class TriviaTestCase(unittest.TestCase):
             "previous_questions": [],
             "quiz_category": {
                 "type": {"type": "Doesn't Exist", "id": "10"},
+                "id": "10",
             },
         }
         res = self.client.post("/quizzes", json=quiz_data)
